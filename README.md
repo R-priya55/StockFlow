@@ -1,100 +1,40 @@
 # StockFlow
 
-A small, organization-based inventory app built with React, Express, Node.js, and PostgreSQL. The code is kept intentionally straightforward: React pages call a small API helper, Express routes call controllers, and PostgreSQL stores the data.
+A simple inventory app built with React, Express, Node.js, and PostgreSQL. It includes signup/login, a dashboard, products, stock adjustments, and organization settings.
 
-## What it can do
+## Run locally
 
-- Create an organization and user account, then log in
-- View product totals, stock value, and low-stock alerts on the dashboard
-- Add, search, edit, and delete products
-- Add or remove stock from the inventory page
-- Set the organization name and default low-stock limit
-- Keep each organization's products separate
+Install Node.js 20.19+ and PostgreSQL, and create a database named `stockflow`.
 
-## Project layout
+1. In `backend`, copy `.env.example` to `.env`, set your PostgreSQL password, and set a private `JWT_SECRET`.
+2. Run `npm install` and `npm start` in `backend`. The server creates its tables on startup and listens on port 5000.
+3. In a second terminal, run `npm install` and `npm run dev` in `frontend`. Open the URL Vite prints (usually `http://localhost:5173`).
+4. Create an account and start adding products.
 
-```text
-StockFlow/
-├── backend/
-│   ├── config/       # PostgreSQL connection
-│   ├── controllers/  # Login, settings, and product logic
-│   ├── db/           # Database schema
-│   ├── routes/       # API endpoints
-│   └── server.js
-└── frontend/
-    └── src/
-        ├── components/
-        ├── pages/
-        └── services/ # Shared API helper
-```
+The Vite development server proxies API requests to the local backend. The React pages call the API helper, Express routes call controllers, and PostgreSQL stores each organization's data.
 
-## Run it locally
+## Deploy on Render
 
-### 1. Install the requirements
+This repository includes a Render Blueprint at [`render.yaml`](./render.yaml). It creates one PostgreSQL database and one Node web service that builds and serves both the React app and API on the same origin. Database tables are initialized automatically on server startup.
 
-Install Node.js 20.19+ (or 22.12+) and PostgreSQL. Create an empty database named `stockflow` using pgAdmin or the PostgreSQL command line.
+1. Push the repository to GitHub and make sure it is public.
+2. Sign in to Render, choose **New → Blueprint**, and connect `R-priya55/StockFlow`.
+3. Review the services and deploy. Render generates a private `JWT_SECRET`; the database password and connection URL stay in Render.
+4. When the deployment finishes, open the web service URL, create an account, and test adding a product and adjusting its stock.
 
-### 2. Configure and prepare the backend
+Do not commit `.env` or paste database credentials into the frontend. The frontend build is public by design; database credentials and JWT secrets must remain server-side.
 
-In a terminal:
+## Main API routes
 
-```powershell
-cd backend
-Copy-Item .env.example .env
-```
-
-Edit `backend/.env` and set your PostgreSQL password. Replace `JWT_SECRET` with a private random value; never commit `.env` or share its values.
-
-```powershell
-npm install
-npm run db:init
-npm start
-```
-
-The API runs at `http://localhost:5000`. Keep this terminal open.
-
-### 3. Run the frontend
-
-Open a second terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-Open the URL Vite prints (usually `http://localhost:5173`). The Vite development server forwards `/api` requests to the backend. Create your first user with **Create an account**.
-
-## Deploy it
-
-The easiest beginner-friendly layout is a static React site, an Express web service, and a managed PostgreSQL database. Render can host these as separate services; any provider that supports the same setup also works.
-
-1. Push this project to your public GitHub repository.
-2. Create a PostgreSQL database with your hosting provider. Keep its credentials private and note its connection string.
-3. Create a Node web service from the repository with `backend` as its root directory and `npm start` as its start command. Add these environment variables in the host dashboard:
-   - `DATABASE_URL`: the database connection string
-   - `JWT_SECRET`: a newly generated, private random value of at least 32 characters
-   - `FRONTEND_URL`: the final deployed frontend origin, such as `https://your-site.example.com`
-   - `DATABASE_SSL=true` only if your database provider requires SSL for its connection
-4. Open a shell for the backend service and run `npm run db:init` once to create the tables.
-5. Create a static site from the same repository with `frontend` as its root directory, `npm run build` as its build command, and `dist` as its publish directory. Set `VITE_API_URL` to the backend URL followed by `/api`, for example `https://your-api.example.com/api`.
-6. Configure the static host's single-page-app fallback so unknown paths serve `/index.html`. Set `FRONTEND_URL` on the API to the static site's exact HTTPS origin, then redeploy the API.
-7. Open the public site, create an account, and test adding a product and changing stock.
-
-Do not put database credentials or `JWT_SECRET` in frontend variables: frontend variables are public in the built website. Free hosting plans may sleep or have limits; check your provider's current database retention and service limits before using real business data.
-
-## API overview
-
-| Method | Route | What it does |
+| Method | Route | Purpose |
 |---|---|---|
 | POST | `/api/auth/signup` | Create an organization and its first user |
 | POST | `/api/auth/login` | Log in |
-| GET | `/api/auth/me` | Get the current user |
 | GET / PUT | `/api/settings` | Read or update organization settings |
-| GET | `/api/dashboard` | Read dashboard totals and low-stock items |
-| GET / POST | `/api/products` | Search or add products |
-| GET / PUT / DELETE | `/api/products/:id` | Read, edit, or delete a product |
+| GET | `/api/dashboard` | Dashboard totals and low-stock products |
+| GET / POST | `/api/products` | Search or create products |
+| GET / PUT / DELETE | `/api/products/:id` | Read, update, or delete a product |
 | PATCH | `/api/products/:id/stock` | Adjust stock |
-| GET | `/health` | Check API and database availability |
+| GET | `/health` | Check the API and database connection |
 
-All routes other than signup and login require a bearer token. Each product query is scoped to the signed-in user's organization.
+All routes other than signup and login require a bearer token. Product data is scoped to the signed-in user's organization.

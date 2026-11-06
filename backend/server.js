@@ -26,12 +26,6 @@ if (process.env.FRONTEND_URL) {
             return callback(new Error("This origin is not allowed by CORS."));
         },
     }));
-}
-app.use(express.json());
-
-app.get("/", (req, res) => {
-    res.send("StockFlow Backend Running");
-});
 
 app.get("/health", async (req, res) => {
     try {

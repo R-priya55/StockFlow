@@ -15,7 +15,7 @@ The Vite development server proxies API requests to the local backend. The React
 
 ## Deploy on Render
 
-This repository includes a Render Blueprint at [`render.yaml`](./render.yaml). It creates one PostgreSQL database and one Node web service that builds and serves both the React app and API on the same origin. Database tables are initialized automatically on server startup.
+This repository includes a Render Blueprint at [`render.yaml`](./render.yaml). It creates one PostgreSQL database and one Node web service that builds and serves both the React app and API on the same origin. Database tables are initialized automatically on server startup. The service builds from the repository root so it can access both `backend` and `frontend`.
 
 1. Push the repository to GitHub and make sure it is public.
 2. Sign in to Render, choose **New → Blueprint**, and connect `R-priya55/StockFlow`.

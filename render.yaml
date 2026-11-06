@@ -3,9 +3,8 @@ services:
     name: stockflow
     runtime: node
     plan: free
-    rootDir: backend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build
+    startCommand: node backend/server.js
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
